@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "cycle_types_and_partitions.h"
+#include "cycle_types.h"
 
 #define BUF_MIN 4096
 #define BUF_RESIZE_FACTOR 1.5
@@ -72,7 +72,7 @@ void compute_cycle_types(workspace *w) {
 						// old_result.cycle_types[i] has sum n - k * max_val
 						// we make it into a cycle type of sum n by setting vals[max_index] = k
 						cycle_type *new_cycle_type = next->cycle_types + next->count;
-						memcpy((void *) new_cycle_type, (void *) (old_result.cycle_types + i), MAX_N + sizeof(short));
+						memcpy((void *) new_cycle_type, (void *) (old_result.cycle_types + i), MAX_N);
 						new_cycle_type->vals[max_index] = k;
 
 						// increment count and reallocate if necessary
@@ -93,8 +93,31 @@ void compute_cycle_types(workspace *w) {
 	}
 }
 
+// agrees with the ordering produced by compute_cycle_types
+// BUT only within cycle_types of the same sum
+int compare_cycle_types(const void *a_void, const void *b_void) {
+	const cycle_type a = *((cycle_type *) a_void);
+	const cycle_type b = *((cycle_type *) b_void);
+	
+	for (int i = MAX_N; i; i--) {
+		if (a.vals[i] < b.vals[i]) {
+			return -1;
+		} else if (a.vals[i] > b.vals[i]) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int get_index(cycle_type c, cycle_types cs) {
+	cycle_type *result_pointer = bsearch(c, cs.cycle_types, cs.count, sizeof(cycle_type), compare_cycle_types);
+
+	return ((int) (result_pointer - cs.cycle_types)) / sizeof(cycle_type);
+}
+
 // test functions
-#ifdef TEST_CTAP
+#ifdef TEST_CYCLE_TYPES
 
 void print_cycle_types(int n, cycle_types c) {
 	printf("start_positions: ");
