@@ -21,6 +21,7 @@ void compute_cycle_types(workspace *w) {
 	w->results[0].count = 1;
 	w->results[0].start_positions = calloc(1, sizeof(int));
 	w->results[0].cycle_types = calloc(1, sizeof(cycle_type));
+	w->results[0].partitions = calloc(1, sizeof(partition));
 	w->max_n_computed = 0;
 
 	// compute remaining cycle_types and partitions using previous
@@ -29,14 +30,21 @@ void compute_cycle_types(workspace *w) {
 		next->count = 0;
 		next->start_positions = malloc(n * sizeof(int));
 
-		// allocate the array of cycle types
+		// allocate the array of cycle types and partitions
 		int buf_size = BUF_MIN;
 		next->cycle_types = malloc(buf_size * sizeof(cycle_type));
+		next->partitions = malloc(buf_size * sizeof(cycle_type));
 
 		// handle the case max_index = 0
 		next->cycle_types[0].vals[0] = n;
 		for (int i = 1; i < MAX_N; i++) {
 			next->cycle_types[0].vals[i] = 0;
+		}
+		for (int i = 0; i < n; i++) {
+			next->partitions[0].vals[i] = 1;
+		}
+		for (int i = n; i < MAX_N; i++) {
+			next->partitions[0].vals[i] = 0;
 		}
 		next->count = 1;
 		next->start_positions[0] = 0;
@@ -75,10 +83,21 @@ void compute_cycle_types(workspace *w) {
 						memcpy((void *) new_cycle_type, (void *) (old_result.cycle_types + i), MAX_N);
 						new_cycle_type->vals[max_index] = k;
 
+						// convert new_cycle_type to a partition
+						partition *new_partition = next->partitions + next->count;
+						memset(&(new_partition->vals), 0, MAX_N);
+						int new_partition_index = 0;
+						for (int i = MAX_N - 1; i >= 0; i--) {
+							for (int j = 0; j < new_cycle_type->vals[i]; j++) {
+								new_partition->vals[new_partition_index++] = i + 1;
+							}
+						}
+
 						// increment count and reallocate if necessary
 						if (++(next->count) > buf_size) {
 							buf_size = (int) (buf_size * BUF_RESIZE_FACTOR);
 							next->cycle_types = realloc(next->cycle_types, buf_size * sizeof(cycle_type));
+							next->partitions = realloc(next->partitions, buf_size * sizeof(cycle_type));
 						}
 					}
 				}
@@ -99,7 +118,7 @@ int compare_cycle_types(const void *a_void, const void *b_void) {
 	const cycle_type a = *((cycle_type *) a_void);
 	const cycle_type b = *((cycle_type *) b_void);
 	
-	for (int i = MAX_N; i; i--) {
+	for (int i = MAX_N - 1; i >= 0; i--) {
 		if (a.vals[i] < b.vals[i]) {
 			return -1;
 		} else if (a.vals[i] > b.vals[i]) {
@@ -110,10 +129,25 @@ int compare_cycle_types(const void *a_void, const void *b_void) {
 	return 0;
 }
 
-int get_index(cycle_type c, cycle_types cs) {
-	cycle_type *result_pointer = bsearch(c, cs.cycle_types, cs.count, sizeof(cycle_type), compare_cycle_types);
+int compare_partitions(const void *a_void, const void *b_void) {
+	const partition a = *((partition *) a_void);
+	const partition b = *((partition *) b_void);
 
-	return ((int) (result_pointer - cs.cycle_types)) / sizeof(cycle_type);
+	for (int i = 0; i < MAX_N; i++) {
+		if (a.vals[i] < b.vals[i]) {
+			return -1;
+		} else if (a.vals[i] > b.vals[i]) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int get_index(partition p, cycle_types cs) {
+	cycle_type *result_pointer = bsearch(&p, cs.partitions, cs.count, sizeof(partition), compare_partitions);
+
+	return ((int) (result_pointer - cs.partitions));
 }
 
 // test functions
@@ -130,6 +164,11 @@ void print_cycle_types(int n, cycle_types c) {
 		cycle_type ct = c.cycle_types[i];
 		for (int j = 0; j < MAX_N; j++) {
 			printf("%d ", ct.vals[j]);
+		}
+		printf("<-> ");
+		partition p = c.partitions[i];
+		for (int j = 0; j < MAX_N && p.vals[j]; j++) {
+			printf("%d ", p.vals[j]);
 		}
 		printf("\n");
 	}
