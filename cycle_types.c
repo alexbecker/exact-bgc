@@ -16,7 +16,7 @@ workspace *alloc_workspace() {
 	return result;
 }
 
-void compute_cycle_types(workspace *w) {
+void *compute_cycle_types(workspace *w) {
 	// compute cycle_types of 0
 	w->results[0].count = 1;
 	w->results[0].start_positions = calloc(1, sizeof(int));
@@ -110,6 +110,8 @@ void compute_cycle_types(workspace *w) {
 		// declare that we are done computing n
 		w->max_n_computed = n;
 	}
+
+	return NULL;
 }
 
 // agrees with the ordering produced by compute_cycle_types

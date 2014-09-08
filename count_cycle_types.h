@@ -7,7 +7,7 @@
 #include <gmp.h>
 #include "cycle_types.h"
 
-mpz_t *count_cycle_types(int n, int q, cycle_types c, int threads);
+mpz_t *count_cycle_types(int n, long q, cycle_types c, int threads);
 
 #endif
 

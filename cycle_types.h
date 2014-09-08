@@ -25,7 +25,7 @@ typedef struct {
 
 workspace *alloc_workspace();
 
-void compute_cycle_types(workspace *w);
+void *compute_cycle_types(workspace *w);
 
 int compare_cycle_types(const void *a_void, const void *b_void);
 

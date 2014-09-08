@@ -43,7 +43,7 @@ MN_rule2_result MN_rule2(partition p, int n, int k, cycle_types cs_old) {
 					u.vals[i] = p.vals[i];
 				}
 
-				while (p.vals[i] > x && p.vals[i + 1] > x) {
+				while (i + 1 < MAX_N && p.vals[i] > x && p.vals[i + 1] > x) {
 					u.vals[i] = p.vals[i + 1] - 1;
 					i++;
 					leg_length++;
@@ -51,7 +51,7 @@ MN_rule2_result MN_rule2(partition p, int n, int k, cycle_types cs_old) {
 
 				u.vals[i++] = x;
 
-				while (p.vals[i] > x && p.vals[i + 1]) {
+				while (i + 1 < MAX_N && p.vals[i] > x && p.vals[i + 1]) {
 					u.vals[i] = p.vals[i + 1] - 1;
 					i++;
 					leg_length++;
@@ -113,15 +113,7 @@ mpq_t *s_to_p(mpq_t *B, int n, int k, workspace *w) {
 	cycle_types cs = w->results[n];
 
 	// number of cycle_types of n with max_index at most k - 1
-	int count;
-	if (k == n) {
-		count = cs.count;
-	} else if (k == 0) {
-		count = 1;
-	} else {
-		count = cs.start_positions[k];
-	}
-	count = cs.count;
+	int count = cs.count;
 
 	mpq_t *C = malloc(count * sizeof(mpq_t));
 	for (int i = 0; i < count; i++) {
@@ -190,7 +182,7 @@ mpq_t *s_to_p(mpq_t *B, int n, int k, workspace *w) {
 	return PC_IAD;
 }
 
-mpz_t *characters(int n, int character_index, workspace *w) {
+mpz_t *character(int n, int character_index, workspace *w) {
 	cycle_types cs = w->results[n];
 
 	mpq_t *s = malloc(cs.count * sizeof(mpq_t));
@@ -246,7 +238,7 @@ void print_character_table(int n) {
 	cycle_types cs = w->results[n];
 
 	for (int i = 0; i < cs.count; i++) {
-		mpz_t *row = characters(n, i, w);
+		mpz_t *row = character(n, i, w);
 		for (int j = 0; j < cs.count; j++) {
 			gmp_printf("%4Zd ", row[j]);
 			mpz_clear(row[j]);
