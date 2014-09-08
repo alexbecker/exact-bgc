@@ -149,7 +149,9 @@ int main(int argc, char **argv) {
 			mpz_t **multiplicities = malloc(cs.count * sizeof(mpz_t *));
 			for (int j = 0; j < cs.count; j++) {
 				multiplicities[j] = get_multiplicities(n, sums[j], q);
+				mpz_clear(sums[j]);
 			}
+			free(sums);
 
 			// print both the decomposition for i
 			char decomp_filename[64];
@@ -167,9 +169,12 @@ int main(int argc, char **argv) {
 			for (int j = 0; j < cs.count; j++) {
 				for (int k = 0; k <= n; k++) {
 					gmp_fprintf(fp, "%Zd ", multiplicities[j][k]);
+					mpz_clear(multiplicities[j][k]);
 				}
+				free(multiplicities[j]);
 				fprintf(fp, "\n");
 			}
+			free(multiplicities);
 			fclose(fp);
 
 			mpz_clear(q);
