@@ -36,7 +36,7 @@ int mobius(int n) {
 	return -1;
 }
 
-mpz_t *num_irreducibles(int n, long q) {
+mpz_t *num_irreducibles(int n, mpz_t q) {
 	mpz_t *result = malloc(sizeof(mpz_t));
 	mpz_init(*result);
 
@@ -44,7 +44,7 @@ mpz_t *num_irreducibles(int n, long q) {
 	for (int d = 1; d <= n; d++) {
 		if (n % d == 0) {
 			mpz_t term;
-			mpz_init_set_ui(term, q);
+			mpz_init_set(term, q);
 			mpz_pow_ui(term, term, d);
 			int mob = mobius(n / d);
 			if (mob == 1) {
@@ -105,7 +105,7 @@ void *compute_num_cycle_types(void *void_data) {
 	return NULL;
 }
 
-mpz_t *count_cycle_types(int n, long q, cycle_types c, int threads) {
+mpz_t *count_cycle_types(int n, mpz_t q, cycle_types c, int threads) {
 	mpz_t *result = malloc(c.count * sizeof(mpz_t));
 
 	// precompute number of irreducibles
