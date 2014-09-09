@@ -1,10 +1,10 @@
-exact-bcg
+exact-bgc
 =========
 
 This library is designed for computing the stable representation decompositions of the cohomology groups
 H^i(PConf_n(C)) of the pure braid groups. Calculations I have performed so far are located in results/.
 
-All content in this repository is licensed under the Apache c2.0 license.
+All content in this repository is licensed under the Apache v2.0 license.
 
 To compile the library, run the following commands:
 
