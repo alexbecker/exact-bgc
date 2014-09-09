@@ -95,14 +95,22 @@ void *compute_cycle_types_threadable(void *void_data) {
 	return NULL;
 }
 
-// passed the number of threads to use followed by a list of primes
+// passed the values n, max_i, number of threads to use, and a list of primes
 // computes the decomposition of H^i(PConf(C^n)) up to MAX_N/4 
 int main(int argc, char **argv) {
-	int threads = atoi(argv[1]), num_primes = argc - 2;
+	int n = atoi(argv[1]);
+	int max_i = atoi(argv[2]);
+	int threads = atoi(argv[3]);
+	int num_primes = argc - 3;
 	mpz_t primes[num_primes];
-	for (int i = 0; i < num_primes; i++) {
-		mpz_init(primes[i]);
-		gmp_sscanf(argv[i + 2], "%Zd", primes[i]);
+	for (int j = 0; j < num_primes; j++) {
+		mpz_init(primes[j]);
+		gmp_sscanf(argv[j + 3], "%Zd", primes[j]);
+	}
+
+	// check that n does not exceed MAX_N
+	if (n > MAX_N) {
+		fprintf(stderr, "Error: n=%d is greater than MAX_N=%d\nRecompile with \"make MAX_N=%d\"\n", n, MAX_N, n);
 	}
 
 	workspace *w = alloc_workspace();
@@ -112,48 +120,46 @@ int main(int argc, char **argv) {
 	pthread_create(&workspace_thread_id, NULL, compute_cycle_types_threadable, w);
 	pthread_join(workspace_thread_id, NULL);
 
-	for (int n = 0; n <= MAX_N; n += 4) {
-		int i = n / 4;
+	// wait for w->result[n] to be computed
+	while (w->max_n_computed < n) {}
 
-		// wait for w->result[n] to be computed
-		while (w->max_n_computed < n) {}
+	cycle_types cs = w->results[n];
 
-		cycle_types cs = w->results[n];
+	for (int prime_index = 0; prime_index < num_primes; prime_index++) {
+		mpz_t q;
+		mpz_init_set(q, primes[prime_index]);
 
-		for (int prime_index = 0; prime_index < num_primes; prime_index++) {
-			mpz_t q;
-			mpz_init_set(q, primes[prime_index]);
+		// compute counts for each cycle_type
+		mpz_t *counts = count_cycle_types(n, q, cs, threads);
 
-			// compute counts for each cycle_type
-			mpz_t *counts = count_cycle_types(n, q, cs, threads);
+		// spawn threads to compute the sums over cycle types
+		mpz_t *sums = malloc(cs.count * sizeof(mpz_t));
+		pthread_t sums_thread_id[threads];
+		thread_data data[threads];
+		for (int j = 0; j < threads; j++) {
+			data[j].n = n;
+			data[j].modulus = threads;
+			data[j].remainder = j;
+			data[j].counts = counts;
+			data[j].w = w;
+			data[j].sums = sums;
+			pthread_create(&sums_thread_id[j], NULL, compute_sums, &data[j]);
+		}
 
-			// spawn threads to compute the sums over cycle types
-			mpz_t *sums = malloc(cs.count * sizeof(mpz_t));
-			pthread_t sums_thread_id[threads];
-			thread_data data[threads];
-			for (int j = 0; j < threads; j++) {
-				data[j].n = n;
-				data[j].modulus = threads;
-				data[j].remainder = j;
-				data[j].counts = counts;
-				data[j].w = w;
-				data[j].sums = sums;
-				pthread_create(&sums_thread_id[j], NULL, compute_sums, &data[j]);
-			}
+		for (int j = 0; j < threads; j++) {
+			pthread_join(sums_thread_id[j], NULL);
+		}
 
-			for (int j = 0; j < threads; j++) {
-				pthread_join(sums_thread_id[j], NULL);
-			}
+		// get multiplicities
+		mpz_t **multiplicities = malloc(cs.count * sizeof(mpz_t *));
+		for (int j = 0; j < cs.count; j++) {
+			multiplicities[j] = get_multiplicities(n, sums[j], q);
+			mpz_clear(sums[j]);
+		}
+		free(sums);
 
-			// get multiplicities
-			mpz_t **multiplicities = malloc(cs.count * sizeof(mpz_t *));
-			for (int j = 0; j < cs.count; j++) {
-				multiplicities[j] = get_multiplicities(n, sums[j], q);
-				mpz_clear(sums[j]);
-			}
-			free(sums);
-
-			// print both the decomposition for i
+		// print both the decomposition for i up to max_i
+		for (int i = 0; i <= max_i; i++) {
 			char decomp_filename[64];
 			gmp_sprintf(decomp_filename, "H^%d(PConf_n(C)).out.%Zd", i, primes[prime_index]);
 			FILE *fp = fopen(decomp_filename, "w");
@@ -161,23 +167,23 @@ int main(int argc, char **argv) {
 				print_character_multiplicity(fp, cs.partitions[j], multiplicities[j][i]);
 			}
 			fclose(fp);
-
-			// print the full decomposition
-			char full_decomp_filename[64];
-			gmp_sprintf(full_decomp_filename, "full_decomp_%d.out.%Zd", i, primes[prime_index]);
-			fp = fopen(full_decomp_filename, "w");
-			for (int j = 0; j < cs.count; j++) {
-				for (int k = 0; k <= n; k++) {
-					gmp_fprintf(fp, "%Zd ", multiplicities[j][k]);
-					mpz_clear(multiplicities[j][k]);
-				}
-				free(multiplicities[j]);
-				fprintf(fp, "\n");
-			}
-			free(multiplicities);
-			fclose(fp);
-
-			mpz_clear(q);
 		}
+
+		// print the full decomposition
+		char full_decomp_filename[64];
+		gmp_sprintf(full_decomp_filename, "full_decomp.out.%Zd", primes[prime_index]);
+		FILE *fp = fopen(full_decomp_filename, "w");
+		for (int j = 0; j < cs.count; j++) {
+			for (int k = 0; k <= n; k++) {
+				gmp_fprintf(fp, "%Zd ", multiplicities[j][k]);
+				mpz_clear(multiplicities[j][k]);
+			}
+			free(multiplicities[j]);
+			fprintf(fp, "\n");
+		}
+		free(multiplicities);
+		fclose(fp);
+
+		mpz_clear(q);
 	}
 }
