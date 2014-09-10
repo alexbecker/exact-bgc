@@ -9,26 +9,27 @@
 #define BUF_MIN 4096
 #define BUF_RESIZE_FACTOR 1.5
 
-workspace *alloc_workspace() {
-	workspace *result = malloc(sizeof(workspace));
-	result->max_n_computed = -1;
-	
-	return result;
+void free_cycle_types (cycle_types cs) {
+	free(cs.start_positions);
+	free(cs.cycle_types);
+	free(cs.partitions);
 }
 
-void *compute_cycle_types(workspace *w) {
+// returns an array contianing cycle types for all t up to n
+cycle_types *compute_cycle_types(int n) {
+	cycle_types *results = malloc((n + 1) * sizeof(cycle_types));
+
 	// compute cycle_types of 0
-	w->results[0].count = 1;
-	w->results[0].start_positions = calloc(1, sizeof(int));
-	w->results[0].cycle_types = calloc(1, sizeof(cycle_type));
-	w->results[0].partitions = calloc(1, sizeof(partition));
-	w->max_n_computed = 0;
+	results[0].count = 1;
+	results[0].start_positions = calloc(1, sizeof(int));
+	results[0].cycle_types = calloc(1, sizeof(cycle_type));
+	results[0].partitions = calloc(1, sizeof(partition));
 
 	// compute remaining cycle_types and partitions using previous
-	for (int n = 1; n <= MAX_N; n++) {
-		cycle_types *next = w->results + n;
+	for (int t = 1; t <= n; t++) {
+		cycle_types *next = results + t;
 		next->count = 0;
-		next->start_positions = malloc(n * sizeof(int));
+		next->start_positions = malloc(t * sizeof(int));
 
 		// allocate the array of cycle types and partitions
 		int buf_size = BUF_MIN;
@@ -36,32 +37,32 @@ void *compute_cycle_types(workspace *w) {
 		next->partitions = malloc(buf_size * sizeof(cycle_type));
 
 		// handle the case max_index = 0
-		next->cycle_types[0].vals[0] = n;
+		next->cycle_types[0].vals[0] = t;
 		for (int i = 1; i < MAX_N; i++) {
 			next->cycle_types[0].vals[i] = 0;
 		}
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < t; i++) {
 			next->partitions[0].vals[i] = 1;
 		}
-		for (int i = n; i < MAX_N; i++) {
+		for (int i = t; i < MAX_N; i++) {
 			next->partitions[0].vals[i] = 0;
 		}
 		next->count = 1;
 		next->start_positions[0] = 0;
 
 		// loop over the max_index
-		for (int max_index = 1; max_index < n; max_index++) {
+		for (int max_index = 1; max_index < t; max_index++) {
 			next->start_positions[max_index] = next->count;
 
 			// a cycle_type with sum n and a given max_index is always formed by
 			// a cycle_type with sum n - k * (max_index + 1) and smaller maximum index,
 			// with vals[max_index] then set to k
 			int max_val = max_index + 1;
-			int max_k = n / max_val;
+			int max_k = t / max_val;
 			for (int k = 1; k <= max_k; k++) {
 
-				int smaller_sum = n - k * max_val;
-				cycle_types old_result = w->results[smaller_sum];
+				int smaller_sum = t - k * max_val;
+				cycle_types old_result = results[smaller_sum];
 
 				// the "|| smaller_max_index == 0" is to deal with the special case where
 				// we are building on the zero cycle type
@@ -106,12 +107,9 @@ void *compute_cycle_types(workspace *w) {
 
 		// avoid taking up more space than necessary
 		next->cycle_types = realloc(next->cycle_types, next->count * sizeof(cycle_types));
-
-		// declare that we are done computing n
-		w->max_n_computed = n;
 	}
 
-	return NULL;
+	return results;
 }
 
 // agrees with the ordering produced by compute_cycle_types
@@ -147,7 +145,7 @@ int compare_partitions(const void *a_void, const void *b_void) {
 }
 
 int get_index(partition p, cycle_types cs) {
-	cycle_type *result_pointer = bsearch(&p, cs.partitions, cs.count, sizeof(partition), compare_partitions);
+	partition *result_pointer = bsearch(&p, cs.partitions, cs.count, sizeof(partition), compare_partitions);
 
 	return ((int) (result_pointer - cs.partitions));
 }
@@ -177,11 +175,16 @@ void print_cycle_types(int n, cycle_types c) {
 }
 
 int main(int argc, char **argv) {
-	workspace *w = alloc_workspace();
-	compute_cycle_types(w);
+	int n;
+	if (argc > 1)
+		n = atoi(argv[1]);
+	else
+		n = MAX_N;
 
-	for (int n = 0; n <= MAX_N; n++) {
-		print_cycle_types(n, w->results[n]);
+	cycle_types *results = compute_cycle_types(n);
+
+	for (int i = 0; i <= n; i++) {
+		print_cycle_types(i, results[i]);
 	}
 }
 

@@ -184,36 +184,49 @@ void test_mobius() {
 }
 
 void test_num_irreducibles() {
-	mpz_t *test_val = num_irreducibles(1, 13);
+	mpz_t thirteen, seventeen;
+	mpz_init_set_ui(thirteen, 13);
+	mpz_init_set_ui(seventeen, 17);
+
+	mpz_t *test_val = num_irreducibles(1, thirteen);
 	assert(!mpz_cmp_ui(*test_val, 13));
 	mpz_clear(*test_val);
 	free(test_val);
 
-	test_val = num_irreducibles(2, 17);
+	test_val = num_irreducibles(2, seventeen);
 	assert(!mpz_cmp_ui(*test_val, 136));
 	mpz_clear(*test_val);
 	free(test_val);
+
+	mpz_clear(thirteen);
+	mpz_clear(seventeen);
 }
 
 void test_count_cycle_types() {
-	workspace *w = alloc_workspace();
-	compute_cycle_types(w);
+	cycle_types *results = compute_cycle_types(3);
 
-	mpz_t *test_counts = count_cycle_types(3, 5, w->results[3], 2);
+	mpz_t five;
+	mpz_init_set_ui(five, 5);
+	mpz_t *test_counts = count_cycle_types(3, five, results[3], 2);
 	unsigned int correct_counts[3] = {10, 50, 40};
-	for (int i = 0; i < w->results[3].count; i++) {
+	for (int i = 0; i < results[3].count; i++) {
 		assert(!mpz_cmp_ui(test_counts[i], correct_counts[i]));
 		mpz_clear(test_counts[i]);
 	}
 
+	mpz_clear(five);
 	free(test_counts);
-	free(w);
+
+	for (int i = 0; i <= 3; i++)
+		free_cycle_types(results[i]);
+	free(results);
 }
 
 int main(int argc, char **argv) {
 	test_mobius();
 	test_num_irreducibles();
 	test_count_cycle_types();
+	printf("PASS\n");
 }
 
 #endif

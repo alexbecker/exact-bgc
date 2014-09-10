@@ -10,6 +10,6 @@
 
 // returns a list containing the value of the character at each partition
 // character_index is the index of the character's defining partition in the cycle_types
-mpz_t *character(int n, int character_index, workspace *w);
+mpz_t *character(int n, int character_index, cycle_types *css);
 
 #endif

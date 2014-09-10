@@ -14,7 +14,7 @@ typedef struct {
 	int modulus;
 	int remainder;
 	mpz_t *counts;
-	workspace *w;
+	cycle_types *css;
 	mpz_t *sums;
 } thread_data;
 
@@ -57,9 +57,9 @@ mpz_t *get_multiplicities(int n, mpz_t sum, mpz_t q) {
 void *compute_sums(void *void_data) {
 	thread_data data = *((thread_data *) void_data);
 
-	int count = data.w->results[data.n].count;
+	int count = data.css[data.n].count;
 	for (int i = data.remainder; i < count; i += data.modulus) {
-		mpz_t *ith_character = character(data.n, i, data.w);
+		mpz_t *ith_character = character(data.n, i, data.css);
 
 		mpz_init_set_ui(data.sums[i], 0);
 		for (int j = 0; j < count; j++) {
@@ -89,12 +89,6 @@ void print_character_multiplicity(FILE *fp, partition p, mpz_t multiplicity) {
 	gmp_fprintf(fp, "%Zd\n", multiplicity);
 }
 
-void *compute_cycle_types_threadable(void *void_data) {
-	workspace *w = void_data;
-	compute_cycle_types(w);
-	return NULL;
-}
-
 // passed the values n, max_i, number of threads to use, and a list of primes
 // computes the decomposition of H^i(PConf(C^n)) up to MAX_N/4 
 int main(int argc, char **argv) {
@@ -111,19 +105,11 @@ int main(int argc, char **argv) {
 	// check that n does not exceed MAX_N
 	if (n > MAX_N) {
 		fprintf(stderr, "Error: n=%d is greater than MAX_N=%d\nRecompile with \"make MAX_N=%d\"\n", n, MAX_N, n);
+		return -1;
 	}
 
-	workspace *w = alloc_workspace();
-
-	// start computing the cycle_types in a new thread
-	pthread_t workspace_thread_id;
-	pthread_create(&workspace_thread_id, NULL, compute_cycle_types_threadable, w);
-	pthread_join(workspace_thread_id, NULL);
-
-	// wait for w->result[n] to be computed
-	while (w->max_n_computed < n) {}
-
-	cycle_types cs = w->results[n];
+	cycle_types *css = compute_cycle_types(n);
+	cycle_types cs = css[n];
 
 	for (int prime_index = 0; prime_index < num_primes; prime_index++) {
 		mpz_t q;
@@ -141,7 +127,7 @@ int main(int argc, char **argv) {
 			data[j].modulus = threads;
 			data[j].remainder = j;
 			data[j].counts = counts;
-			data[j].w = w;
+			data[j].css = css;
 			data[j].sums = sums;
 			pthread_create(&sums_thread_id[j], NULL, compute_sums, &data[j]);
 		}

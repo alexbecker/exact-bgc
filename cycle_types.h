@@ -18,14 +18,9 @@ typedef struct {
 	partition *partitions;		// certain functions are easier to compute for partitions
 } cycle_types;
 
-typedef struct {
-	volatile int max_n_computed;
-	cycle_types results[MAX_N + 1];
-} workspace;
+void free_cycle_types(cycle_types cs);
 
-workspace *alloc_workspace();
-
-void *compute_cycle_types(workspace *w);
+cycle_types *compute_cycle_types(int n);
 
 int compare_cycle_types(const void *a_void, const void *b_void);
 
