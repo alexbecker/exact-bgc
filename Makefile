@@ -1,14 +1,15 @@
 CC=gcc
-CFLAGS=-std=gnu99
+CFLAGS=-std=gnu99 -pg
 LDFLAGS=-lm -lgmp -lpthread
 SRC:=$(wildcard *.c)
-OBJ:=$(SRC:.c=.o)
 
 evaluate: CFLAGS+=-DMAX_N=$(MAX_N)
-evaluate: $(OBJ)
+evaluate: OBJ:=evaluate.o characters.o count_cycle_types.o cycle_types.o
+evaluate: evaluate.o characters.o count_cycle_types.o cycle_types.o
 	mkdir -p bin
 	$(CC) $(CFLAGS) $(OBJ) -o bin/$@ $(LDFLAGS)
 
+.PHONY: check
 check: CFLAGS+=-DMAX_N=5
 check: 
 	mkdir -p bin

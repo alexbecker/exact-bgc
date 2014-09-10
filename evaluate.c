@@ -172,4 +172,6 @@ int main(int argc, char **argv) {
 
 		mpz_clear(q);
 	}
+
+	exit(0);
 }
