@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=gnu99 -pg
+CFLAGS=-std=gnu99
 LDFLAGS=-lm -lgmp -lpthread
 SRC:=$(wildcard *.c)
 
@@ -35,5 +35,6 @@ depend:
 characters.o: characters.c characters.h cycle_types.h
 count_cycle_types.o: count_cycle_types.c count_cycle_types.h \
  cycle_types.h
-cycle_types.o: cycle_types.c cycle_types.h
 evaluate.o: evaluate.c cycle_types.h count_cycle_types.h characters.h
+character_table.o: character_table.c characters.h cycle_types.h
+cycle_types.o: cycle_types.c cycle_types.h
