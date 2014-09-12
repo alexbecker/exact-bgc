@@ -14,7 +14,7 @@ typedef struct {
 	int *coeffs;
 } MN_rule2_result;
 
-MN_rule2_result MN_rule2(partition p, int n, int k, cycle_types cs_old) {
+MN_rule2_result MN_rule2(partition p, int n, int k, tree partition_index_tree) {
 	MN_rule2_result result;
 	result.count = 0;
 	int buf_size = n;
@@ -63,7 +63,7 @@ MN_rule2_result MN_rule2(partition p, int n, int k, cycle_types cs_old) {
 				}
 
 				// compute the index of u and add it to result
-				result.indices[result.count] = get_index(u, cs_old);
+				result.indices[result.count] = get_index(u, partition_index_tree);
 				if (leg_length % 2 == 0) {
 					result.coeffs[result.count] = 1;
 				} else {
@@ -103,9 +103,9 @@ mpq_t *integrate_and_divide(mpq_t *B, int n, int k, cycle_types cs, cycle_types 
 	return result;
 }
 
-mpq_t *s_to_p(mpq_t *B, int n, int k, cycle_types *css) {
+mpq_t *s_to_p(mpq_t *B, int n, int k, cycle_types *css, tree *trees) {
 	if (k > n) {
-		return s_to_p(B, n, n, css);
+		return s_to_p(B, n, n, css, trees);
 	}
 
 	cycle_types cs_old = css[n - k];
@@ -133,7 +133,7 @@ mpq_t *s_to_p(mpq_t *B, int n, int k, cycle_types *css) {
 	mpq_t mn_coeff;
 	mpq_init(mn_coeff);
 	for (int i = 0; i < cs.count; i++) {
-		MN_rule2_result mn = MN_rule2(cs.partitions[i], n, k, cs_old);
+		MN_rule2_result mn = MN_rule2(cs.partitions[i], n, k, trees[n - k]);
 
 		for (int j = 0; j < mn.count; j++) {
 			int mn_index = mn.indices[j];
@@ -147,7 +147,7 @@ mpq_t *s_to_p(mpq_t *B, int n, int k, cycle_types *css) {
 	}
 	mpq_clear(mn_coeff);
 
-	mpq_t *PC = s_to_p(C, n - k, k, css);
+	mpq_t *PC = s_to_p(C, n - k, k, css, trees);
 
 	// free C
 	for (int i = 0; i < count; i++) {
@@ -165,7 +165,7 @@ mpq_t *s_to_p(mpq_t *B, int n, int k, cycle_types *css) {
 	}
 	free(PC);
 
-	mpq_t *PD = s_to_p(B, n, k - 1, css);
+	mpq_t *PD = s_to_p(B, n, k - 1, css, trees);
 
 	// add PD to PC_IAD (note both have the same length)
 	for (int i = 0; i < cs.count; i++) {
@@ -181,7 +181,7 @@ mpq_t *s_to_p(mpq_t *B, int n, int k, cycle_types *css) {
 	return PC_IAD;
 }
 
-mpz_t *character(int n, int character_index, cycle_types *css) {
+mpz_t *character(int n, int character_index, cycle_types *css, tree *trees) {
 	cycle_types cs = css[n];
 
 	mpq_t *s = malloc(cs.count * sizeof(mpq_t));
@@ -191,7 +191,7 @@ mpz_t *character(int n, int character_index, cycle_types *css) {
 	}
 	mpq_set_ui(s[character_index], 1, 1);
 
-	mpq_t *p = s_to_p(s, n, n, css);
+	mpq_t *p = s_to_p(s, n, n, css, trees);
 	
 	// free s
 	for (int i = 0; i < cs.count; i++) {
@@ -235,9 +235,13 @@ void print_character_table(int n) {
 	cycle_types *css = compute_cycle_types(n);
 	cycle_types cs = css[n];
 
+	tree *trees = malloc((n + 1) * sizeof(tree));
+	for (int i = 0; i <= n; i++)
+		trees[i] = get_partition_index_tree(i, css[i]);
+
 	printf("Character table of S_%d:\n", n);
 	for (int i = 0; i < cs.count; i++) {
-		mpz_t *row = character(n, i, css);
+		mpz_t *row = character(n, i, css, trees);
 		for (int j = 0; j < cs.count; j++) {
 			gmp_printf("%4Zd ", row[j]);
 			mpz_clear(row[j]);

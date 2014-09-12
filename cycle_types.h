@@ -18,12 +18,19 @@ typedef struct {
 	partition *partitions;		// certain functions are easier to compute for partitions
 } cycle_types;
 
+typedef union _tree {
+	union _tree *node;
+	int leaf;
+} tree;
+
 void free_cycle_types(cycle_types cs);
 
 cycle_types *compute_cycle_types(int n);
 
 int compare_cycle_types(const void *a_void, const void *b_void);
 
-int get_index(partition p, cycle_types cs);
+tree get_partition_index_tree(int n, cycle_types cs);
+
+int get_index(partition p, tree partition_index_tree);
 
 #endif

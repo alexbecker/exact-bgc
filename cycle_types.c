@@ -144,10 +144,50 @@ int compare_partitions(const void *a_void, const void *b_void) {
 	return 0;
 }
 
-int get_index(partition p, cycle_types cs) {
-	partition *result_pointer = bsearch(&p, cs.partitions, cs.count, sizeof(partition), compare_partitions);
+// builds a tree which allows get_index to quickly look up the index of a partition
+tree get_partition_index_tree(int n, cycle_types cs) {
+	if (n == 0) {
+		tree result;
+		result.node = malloc(sizeof(tree));
+		result.node[0].leaf = 0;
 
-	return ((int) (result_pointer - cs.partitions));
+		return result;
+	}
+
+	// this is the root node
+	tree result, cur_node;
+	result.node = calloc(n, sizeof(tree));
+
+	partition *ps = cs.partitions;
+
+	for (int i = 0; i < cs.count; i++) {
+		cur_node.node = result.node;
+		int sum_remaining = n;
+		for (int j = 0; j + 1 < MAX_N && ps[i].vals[j + 1]; j++) {
+			int val = ps[i].vals[j];
+			sum_remaining -= val;
+
+			if (!cur_node.node[val - 1].node)
+				cur_node.node[val - 1].node = calloc(sum_remaining, sizeof(tree));
+			
+			cur_node.node = cur_node.node[val - 1].node;
+		}
+
+		cur_node.node[sum_remaining - 1].leaf = i;
+	}
+
+	return result;
+}
+
+int get_index(partition p, tree partition_index_tree) {
+	if (!p.vals[0])
+		return 0;
+
+	int i;
+	for (i = 0; i + 1 < MAX_N && p.vals[i + 1]; i++)
+		partition_index_tree.node = partition_index_tree.node[p.vals[i] - 1].node;
+
+	return partition_index_tree.node[p.vals[i] - 1].leaf;
 }
 
 // test functions

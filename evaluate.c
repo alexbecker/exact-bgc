@@ -14,6 +14,7 @@ typedef struct {
 	int modulus;
 	int remainder;
 	cycle_types *css;
+	tree *trees;
 	mpz_t *counts;
 	mpz_t *sums;
 } thread_data;
@@ -25,7 +26,7 @@ void *compute_sums(void *void_data) {
 
 	int count = data.css[data.n].count;
 	for (int i = data.remainder; i < count; i += data.modulus) {
-		mpz_t *ith_character = character(data.n, i, data.css);
+		mpz_t *ith_character = character(data.n, i, data.css, data.trees);
 
 		mpz_init_set_ui(data.sums[i], 0);
 		for (int j = 0; j < count; j++) {
@@ -60,6 +61,10 @@ int main(int argc, char **argv) {
 	cycle_types *css = compute_cycle_types(n);
 	cycle_types cs = css[n];
 
+	tree *trees = malloc((n + 1) * sizeof(tree));
+	for (int j = 0; j <= n; j++)
+		trees[j] = get_partition_index_tree(j, css[j]);
+
 	for (int prime_index = 0; prime_index < num_primes; prime_index++) {
 		mpz_t q;
 		mpz_init_set(q, primes[prime_index]);
@@ -77,6 +82,7 @@ int main(int argc, char **argv) {
 			data[j].remainder = j;
 			data[j].counts = counts;
 			data[j].css = css;
+			data[j].trees = trees;
 			data[j].sums = sums;
 			pthread_create(&sums_thread_id[j], NULL, compute_sums, &data[j]);
 		}

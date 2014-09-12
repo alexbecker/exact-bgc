@@ -1,3 +1,5 @@
 bin/*
 *.temp
 *.o
+*.swp
+*.swo
