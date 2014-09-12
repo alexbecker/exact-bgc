@@ -13,9 +13,11 @@
 
 typedef struct {
 	int n;
+	int count;
 	int modulus;
 	int remainder;
 	cycle_types *css;
+	tree *trees;
 	mpz_t **results;
 } thread_data;
 
@@ -24,8 +26,8 @@ void *compute_characters(void *void_data) {
 
 	cycle_types cs = data.css[data.n];
 
-	for (int i = data.remainder; i < cs.count; i += data.modulus) {
-		data.results[i] = character(data.n, i, data.css);
+	for (int i = 0; data.remainder + i * data.modulus < cs.count; i++) {
+		data.results[i] = character(data.n, data.remainder + i * data.modulus, data.css, data.trees);
 	}
 
 	return NULL;
@@ -39,6 +41,10 @@ int main(int argc, char **argv) {
 
 	cycle_types *css = compute_cycle_types(n);
 	cycle_types cs = css[n];
+
+	tree *trees = malloc((n + 1) * sizeof(tree));
+	for (int i = 0; i <= n; i++)
+		trees[i] = get_partition_index_tree(i, css[i]);
 
 	// number of characters computed by this instance
 	int count;
@@ -54,9 +60,11 @@ int main(int argc, char **argv) {
 	thread_data data[threads];
 	for (int i = 0; i < threads; i++) {
 		data[i].n = n;
+		data[i].count = count;
 		data[i].modulus = modulus * threads;
 		data[i].remainder = modulus * i + remainder;
 		data[i].css = css;
+		data[i].trees = trees;
 		data[i].results = results;
 	}
 

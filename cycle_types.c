@@ -98,7 +98,7 @@ cycle_types *compute_cycle_types(int n) {
 						if (++(next->count) > buf_size) {
 							buf_size = (int) (buf_size * BUF_RESIZE_FACTOR);
 							next->cycle_types = realloc(next->cycle_types, buf_size * sizeof(cycle_type));
-							next->partitions = realloc(next->partitions, buf_size * sizeof(cycle_type));
+							next->partitions = realloc(next->partitions, buf_size * sizeof(partition));
 						}
 					}
 				}
@@ -106,7 +106,8 @@ cycle_types *compute_cycle_types(int n) {
 		}
 
 		// avoid taking up more space than necessary
-		next->cycle_types = realloc(next->cycle_types, next->count * sizeof(cycle_types));
+		//next->cycle_types = realloc(next->cycle_types, next->count * sizeof(cycle_type));
+		//next->partitions = realloc(next->partitions, next->count * sizeof(partition));
 	}
 
 	return results;

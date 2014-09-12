@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=gnu99 -O3 -pg
+CFLAGS=-std=gnu99 -O3
 LDFLAGS=-lm -lgmp -lpthread
 SRC:=$(wildcard *.c)
 
