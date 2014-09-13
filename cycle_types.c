@@ -1,4 +1,4 @@
-// cycle_types_and_partitions.c
+// cycle_types.c
 // see header file for details
 
 #include <stdlib.h>
@@ -106,6 +106,7 @@ cycle_types *compute_cycle_types(int n) {
 		}
 
 		// avoid taking up more space than necessary
+		// FIXME: this causes invalid reads/writes, not sure why
 		//next->cycle_types = realloc(next->cycle_types, next->count * sizeof(cycle_type));
 		//next->partitions = realloc(next->partitions, next->count * sizeof(partition));
 	}

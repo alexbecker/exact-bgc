@@ -7,9 +7,9 @@
 #include <string.h>
 #include <gmp.h>
 #include <pthread.h>
-#include "cycle_types.h"
-#include "count_cycle_types.h"
-#include "multiplicities.h"
+#include "../cycle_types.h"
+#include "../count_cycle_types.h"
+#include "../multiplicities.h"
 
 // we may not have enough memory to read in the entire file
 // thus we read in only CHARACTERS_PER_THREAD lines for each thread to process
@@ -57,11 +57,11 @@ int main(int argc, char **argv) {
 	int max_i = atoi(argv[2]);
 	char *filename = argv[3];
 	int threads = atoi(argv[4]);
-	int num_primes = argc - 4;
+	int num_primes = argc - 5;
 	mpz_t primes[num_primes];
 	for (int j = 0; j < num_primes; j++) {
 		mpz_init(primes[j]);
-		gmp_sscanf(argv[j + 3], "%Zd", primes[j]);
+		gmp_sscanf(argv[j + 5], "%Zd", primes[j]);
 	}
 
 	// check that n does not exceed MAX_N
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 		int num_chunks = cs.count / (threads * CHARACTERS_PER_THREAD) + 1;
 		for (int j = 0; j < num_chunks; j++) {
 			int num_lines;
-			if (j == num_chunks) {
+			if (j == num_chunks - 1) {
 				num_lines = cs.count % (threads * CHARACTERS_PER_THREAD);
 				if (!num_lines)
 					break;
@@ -122,10 +122,10 @@ int main(int argc, char **argv) {
 				characters[k] = malloc(cs.count * sizeof(mpz_t));
 				int line_index = 0;
 				for (int m = 0; m < cs.count; m++) {
-					gmp_sscanf(line + line_index, "%Zd", characters[k][m]);
+					gmp_sscanf(*line + line_index, "%Zd", characters[k][m]);
 
 					// consume string to next character value
-					while (*line[line_index++] != ' ') {}
+					while (line_index < *line_len && (*line)[line_index++] != ' ') {}
 				}
 			}
 			free(*line);

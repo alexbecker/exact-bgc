@@ -7,7 +7,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ H^i(PConf_n(C)).
 
 To calculate the representation decomposition, run:
 
-./evaluate n max_i threads prime1 prime2 ... primek
+	./evaluate n max_i threads prime1 prime2 ... primek
 
 where threads is the number of threads to use, prime1 through primek are prime numbers or prime powers.
 This will produce the decompositions for i up to max_i.
@@ -34,10 +34,6 @@ Choose prime1 through primek to be larger than you expect any of the multiplicit
 H^i(PConf_n(C)) will be, and such that their product is larger than the dimension of any H^i(PConf_n(C)).
 If full_decomp.out.primej match for all j, this certifies the results.
 
-TODO:
-
-	- Optimize
-
-	- Run on a larger machine
-
-	- Improve documentation
+The files in cluster/ are intended for use on a distributed cluster where sharing memory is slow or
+impossible. These programs can be compiled using "make cluster MAX_N=n". More detailed instructions
+on using these programs is coming soon. 

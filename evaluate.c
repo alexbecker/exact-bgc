@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
 	int n = atoi(argv[1]);
 	int max_i = atoi(argv[2]);
 	int threads = atoi(argv[3]);
-	int num_primes = argc - 3;
+	int num_primes = argc - 4;
 	mpz_t primes[num_primes];
 	for (int j = 0; j < num_primes; j++) {
 		mpz_init(primes[j]);
-		gmp_sscanf(argv[j + 3], "%Zd", primes[j]);
+		gmp_sscanf(argv[j + 4], "%Zd", primes[j]);
 	}
 
 	// check that n does not exceed MAX_N

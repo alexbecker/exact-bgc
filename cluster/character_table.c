@@ -8,14 +8,16 @@
 #include <stdio.h>
 #include <gmp.h>
 #include <pthread.h>
-#include "characters.h"
-#include "cycle_types.h"
+#include "../characters.h"
+#include "../cycle_types.h"
 
 typedef struct {
 	int n;
 	int count;
 	int modulus;
 	int remainder;
+	int thread_modulus;
+	int thread_remainder;
 	cycle_types *css;
 	tree *trees;
 	mpz_t **results;
@@ -27,7 +29,8 @@ void *compute_characters(void *void_data) {
 	cycle_types cs = data.css[data.n];
 
 	for (int i = 0; data.remainder + i * data.modulus < cs.count; i++) {
-		data.results[i] = character(data.n, data.remainder + i * data.modulus, data.css, data.trees);
+		data.results[data.thread_remainder + i * data.thread_modulus] 
+			= character(data.n, data.remainder + i * data.modulus, data.css, data.trees);
 	}
 
 	return NULL;
@@ -63,6 +66,8 @@ int main(int argc, char **argv) {
 		data[i].count = count;
 		data[i].modulus = modulus * threads;
 		data[i].remainder = modulus * i + remainder;
+		data[i].thread_modulus = threads;
+		data[i].thread_remainder = i;
 		data[i].css = css;
 		data[i].trees = trees;
 		data[i].results = results;

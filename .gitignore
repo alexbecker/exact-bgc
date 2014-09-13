@@ -1,4 +1,5 @@
 bin/*
+cluster/bin/*
 *.temp
 *.o
 *.swp
