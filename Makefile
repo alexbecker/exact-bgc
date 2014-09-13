@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-std=gnu99 -O3
 LDFLAGS=-lm -lgmp -lpthread
-SRC:=$(wildcard *.c) $(wildcard cluster/*.c)
+SRC:=$(wildcard *.c)
 
 evaluate: CFLAGS+=-DMAX_N=$(MAX_N)
 evaluate: OBJ:=evaluate.o characters.o count_cycle_types.o cycle_types.o multiplicities.o
@@ -45,8 +45,3 @@ evaluate.o: evaluate.c cycle_types.h count_cycle_types.h characters.h \
  multiplicities.h
 multiplicities.o: multiplicities.c multiplicities.h cycle_types.h
 cycle_types.o: cycle_types.c cycle_types.h
-character_table.o: cluster/character_table.c cluster/../characters.h \
- cluster/../cycle_types.h cluster/../cycle_types.h
-evaluate_from_file.o: cluster/evaluate_from_file.c \
- cluster/../cycle_types.h cluster/../count_cycle_types.h \
- cluster/../cycle_types.h cluster/../multiplicities.h
