@@ -35,5 +35,23 @@ H^i(PConf_n(C)) will be, and such that their product is larger than the dimensio
 If full_decomp.out.primej match for all j, this certifies the results.
 
 The files in cluster/ are intended for use on a distributed cluster where sharing memory is slow or
-impossible. These programs can be compiled using "make cluster MAX_N=n". More detailed instructions
-on using these programs is coming soon. 
+impossible. These are intended for use only by experienced Linux users; the following proceedure **should** work
+for Ubuntu machines, but has only been tested on Ubuntu Trusty on AWS c3 instances and your machine may vary 
+in ways I cannot predict. Compile the cluster versions with "make cluster MAX_N=n". 
+If you have compiled anything for a different value of n, run "make clean" first. On a machine with 
+network permissions appropriate for an NFS filesystem, run aws_master.sh to set it up as a master.
+Replace each of the values in aws_slave.sh enclosed in percent signs with the appropriate value.
+Run aws_slave.sh on each slave to connect it to the master and automatically start computing the character tables.
+Once every slave has finished, run
+
+	python combine_partial_tables.py n max_i
+
+to combine the tables. Then run
+
+	./evaluate_from_file n max_i filename threads prime1 prime2 ... primek
+
+and verify the result as in the non-cluster case.
+
+### KNOWN BUGS:
+
+	- combine_partial_tables.py may hang on the last line of the table for some reason; if you kill it the table will be rendered faithfully.
