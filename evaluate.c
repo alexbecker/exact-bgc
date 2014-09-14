@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
 		// print the decomposition for i up to max_i
 		for (int i = 0; i <= max_i; i++) {
-			char decomp_filename[256];
+			char decomp_filename[2048];
 			gmp_sprintf(decomp_filename, "H^%d(PConf_n(C)).out.%Zd", i, primes[prime_index]);
 			FILE *fp = fopen(decomp_filename, "w");
 			for (int j = 0; j < cs.count; j++) {
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 		}
 
 		// print the full decomposition
-		char full_decomp_filename[256];
+		char full_decomp_filename[2048];
 		gmp_sprintf(full_decomp_filename, "full_decomp.out.%Zd", primes[prime_index]);
 		FILE *fp = fopen(full_decomp_filename, "w");
 		for (int j = 0; j < cs.count; j++) {

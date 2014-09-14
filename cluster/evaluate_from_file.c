@@ -87,12 +87,12 @@ int main(int argc, char **argv) {
 		// open the output files
 		FILE **decomp_fps = malloc((max_i + 1) * sizeof(FILE *));
 		for (int i = 0; i <= max_i; i++) {
-			char decomp_filename[256];
+			char decomp_filename[2048];
 			gmp_sprintf(decomp_filename, "H^%d(PConf_n(C)).out.%Zd", i, primes[prime_index]);
 			decomp_fps[i] = fopen(decomp_filename, "w");
 		}
 
-		char full_decomp_filename[256];
+		char full_decomp_filename[2048];
 		gmp_sprintf(full_decomp_filename, "full_decomp.out.%Zd", primes[prime_index]);
 		FILE *full_decomp_fp = fopen(full_decomp_filename, "w");
 
@@ -122,6 +122,7 @@ int main(int argc, char **argv) {
 				characters[k] = malloc(cs.count * sizeof(mpz_t));
 				int line_index = 0;
 				for (int m = 0; m < cs.count; m++) {
+					mpz_init(characters[k][m]);
 					gmp_sscanf(*line + line_index, "%Zd", characters[k][m]);
 
 					// consume string to next character value
@@ -188,6 +189,9 @@ int main(int argc, char **argv) {
 		for (int j = 0; j < cs.count; j++)
 			mpz_clear(counts[j]);
 		free(counts);
+
+		// rewind character table file
+		rewind(character_table_fp);
 	}
 
 	exit(0);
