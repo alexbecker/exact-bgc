@@ -52,6 +52,9 @@ to combine the tables. Then run
 
 and verify the result as in the non-cluster case.
 
+A note on performance: The parallelization works very well on machines with up to 16 cores, but on 32 cores the
+overhead becomes significant. Therefore it is ideal to run on a cluster of 16 core machines.
+
 ### KNOWN BUGS:
 
-	- combine_partial_tables.py may hang on the last line of the table for some reason; if you kill it the table will be rendered faithfully.
+- combine_partial_tables.py may hang on the last line of the table for some reason; if you kill it the table will be rendered faithfully.
