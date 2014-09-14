@@ -46,15 +46,19 @@ Once every slave has finished, run
 
 	python combine_partial_tables.py n max_i
 
-to combine the tables. Then run
+on a single machine to combine the tables. Then run
 
 	./evaluate_from_file n max_i filename threads prime1 prime2 ... primek
 
 and verify the result as in the non-cluster case.
 
-A note on performance: The parallelization works very well on machines with up to 16 cores, but on 32 cores the
-overhead becomes significant. Therefore it is ideal to run on a cluster of 16 core machines.
+A note on performance: The parallelization of character_table works very well on machines with up to 16 cores, 
+but on 32 cores the overhead becomes significant. Therefore it is ideal to run on a cluster of 16 core machines. 
+The parallelization of evaluate_from_file is less good, and it gains little with more than 4 cores, but it is 
+very fast relative to character_table so this is not a major issue.
 
 ### KNOWN BUGS:
 
 - combine_partial_tables.py may hang on the last line of the table for some reason; if you kill it the table will be rendered faithfully.
+
+- evaluate_from_file has a memory leak when using multiple primes.
