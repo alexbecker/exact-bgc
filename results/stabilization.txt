@@ -1,0 +1,18 @@
+This document records the value of n at which H^i(PConf_n(C)) stabilizes.
+
+  i  |  n  
+-----------
+  0  |  1
+  1  |  4
+  2  |  7
+  3  |  10
+  4  |  13
+  5  |  16
+  6  |  19
+  7  |  22
+  8  |  25
+  9  |  28
+  10 |  31
+
+All these values stabilize at 3i+1. In addition, with the obvious exception of i=0, at 3i the only missing
+component of the decomposition is V(i+1, 1, ..., 1) with i-1 1's.
