@@ -20,6 +20,7 @@ This license applies to all code in this repository.
 This library is designed for computing the stable representation decompositions of the cohomology groups
 H^i(PConf_n(C)) of the pure braid groups. Calculations I have performed so far are located in results/.
 
+GMP is required to use this library. It can be installed using your package manager or from http://gmplib.org.
 To compile the library, run "make MAX_N=n" where n is the largest value of n you want to work with,
 usually 4 times the largest value of i for which you want to compute the stable decomposition of
 H^i(PConf_n(C)).
