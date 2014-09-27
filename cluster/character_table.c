@@ -20,7 +20,6 @@ typedef struct {
 	int thread_remainder;
 	cycle_types *css;
 	tree *trees;
-	mpz_t **results;
 } thread_data;
 
 void *compute_characters(void *void_data) {
@@ -28,10 +27,22 @@ void *compute_characters(void *void_data) {
 
 	cycle_types cs = data.css[data.n];
 
+	// print the results to a file
+	char filename[32];
+	sprintf(filename, "S_%d.%d.%d", data.n, data.modulus, data.remainder);
+	FILE *fp = fopen(filename, "w");
+
 	for (int i = 0; data.remainder + i * data.modulus < cs.count; i++) {
-		data.results[data.thread_remainder + i * data.thread_modulus] 
-			= character(data.n, data.remainder + i * data.modulus, data.css, data.trees);
+		mpz_t *result = character(data.n, data.remainder + i * data.modulus, data.css, data.trees);
+		for (int j = 0; j < cs.count; j++) {
+			gmp_fprintf(fp, "%Zd ", result[j]);
+			mpz_clear(result[j]);
+		}
+		fprintf(fp, "\n");
+		free(result);
 	}
+
+	fclose(fp);
 
 	return NULL;
 }
@@ -56,8 +67,6 @@ int main(int argc, char **argv) {
 	else
 		count = cs.count / modulus;
 
-	mpz_t **results = malloc(count * sizeof(mpz_t *));
-
 	// create thread data
 	pthread_t thread_ids[threads];
 	thread_data data[threads];
@@ -70,7 +79,6 @@ int main(int argc, char **argv) {
 		data[i].thread_remainder = i;
 		data[i].css = css;
 		data[i].trees = trees;
-		data[i].results = results;
 	}
 
 	// spawn threads to compute the character table
@@ -80,17 +88,6 @@ int main(int argc, char **argv) {
 	// join them
 	for (int i = 0; i < threads; i++)
 		pthread_join(thread_ids[i], NULL);
-
-	// print the results to a file
-	char filename[32];
-	sprintf(filename, "S_%d.%d.%d", n, modulus, remainder);
-	FILE *fp = fopen(filename, "w");
-	for (int i = 0; i < count; i++) {
-		for (int j = 0; j < cs.count; j++)
-			gmp_fprintf(fp, "%Zd ", results[i][j]);
-		fprintf(fp, "\n");
-	}
-	fclose(fp);
 
 	exit(0);
 }

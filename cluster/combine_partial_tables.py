@@ -14,7 +14,7 @@ def combine(n, i):
 		for j in range(i):
 			line = fp[j].readline()
 
-			if line is "":
+			if not line:
 				notDone = False
 				break
 
