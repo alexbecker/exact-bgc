@@ -22,8 +22,7 @@ H^i(PConf_n(C)) of the pure braid groups. Calculations I have performed so far a
 
 GMP is required to use this library. It can be installed using your package manager or from http://gmplib.org.
 To compile the library, run "make MAX_N=n" where n is the largest value of n you want to work with,
-usually 4 times the largest value of i for which you want to compute the stable decomposition of
-H^i(PConf_n(C)).
+usually 3i+1 if you want to compute H^i(PConf_n(C)).
 
 To calculate the representation decomposition, run:
 
@@ -59,7 +58,5 @@ The parallelization of evaluate_from_file is less good, and it gains little with
 very fast relative to character_table so this is not a major issue.
 
 ### KNOWN BUGS:
-
-- combine_partial_tables.py may hang on the last line of the table for some reason; if you kill it the table will be rendered faithfully.
 
 - evaluate_from_file has a memory leak when using multiple primes.
