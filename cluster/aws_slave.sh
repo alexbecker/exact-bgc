@@ -18,6 +18,10 @@ done
 id=$(ls -1 | grep -n "$HOSTNAME" | sed "s/:.*//")
 let id=id-1
 
-# run
+# run for n in [min_n, max_n]
 cd /mnt/master
-./character_table %n% %num_nodes% $id %threads%
+n=%min_n%
+while [ $n -le %max_n% ]; do
+	./character_table $n %num_nodes% $id %threads%
+	n=$(expr $n + 1)
+done

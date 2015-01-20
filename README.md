@@ -57,6 +57,14 @@ but on 32 cores the overhead becomes significant. Therefore it is ideal to run o
 The parallelization of evaluate_from_file is less good, and it gains little with more than 4 cores, but it is 
 very fast relative to character_table so this is not a major issue.
 
+### RESULTS:
+
+Results computed so far are located in results/. Run
+
+	python visualizations.py max_i
+
+to see visualizations of the results for i up to max_i.
+
 ### CONJECTURES:
 
 It is conjectured that the multiplicity of V(lambda) in H^i(PConf_n(C)) stabilizes at n=k+i+1, where k
