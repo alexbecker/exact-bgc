@@ -34,12 +34,6 @@ Choose prime1 through primek to be larger than you expect any of the multiplicit
 H^i(PConf_n(C)) will be, and such that their product is larger than the dimension of any H^i(PConf_n(C)).
 If full_decomp.out.primej match for all j, this certifies the results.
 
-Alternatively, to calculate multiple such decompositions for a single prime, run:
-
-	./evaluate_multiple_n max_n max_i threads prime
-
-which is useful for testing 
-
 The files in cluster/ are intended for use on a distributed cluster where sharing memory is slow or
 impossible. These are intended for use only by experienced Linux users; the following procedure **should** work
 for Ubuntu machines, but has only been tested on Ubuntu Trusty on AWS c3 instances and your machine may vary 
