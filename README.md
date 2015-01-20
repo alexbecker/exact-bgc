@@ -34,8 +34,14 @@ Choose prime1 through primek to be larger than you expect any of the multiplicit
 H^i(PConf_n(C)) will be, and such that their product is larger than the dimension of any H^i(PConf_n(C)).
 If full_decomp.out.primej match for all j, this certifies the results.
 
+Alternatively, to calculate multiple such decompositions for a single prime, run:
+
+	./evaluate_multiple_n max_n max_i threads prime
+
+which is useful for testing 
+
 The files in cluster/ are intended for use on a distributed cluster where sharing memory is slow or
-impossible. These are intended for use only by experienced Linux users; the following proceedure **should** work
+impossible. These are intended for use only by experienced Linux users; the following procedure **should** work
 for Ubuntu machines, but has only been tested on Ubuntu Trusty on AWS c3 instances and your machine may vary 
 in ways I cannot predict. Compile the cluster versions with "make cluster MAX_N=n". 
 If you have compiled anything for a different value of n, run "make clean" first. On a machine with 
@@ -56,6 +62,19 @@ A note on performance: The parallelization of character_table works very well on
 but on 32 cores the overhead becomes significant. Therefore it is ideal to run on a cluster of 16 core machines. 
 The parallelization of evaluate_from_file is less good, and it gains little with more than 4 cores, but it is 
 very fast relative to character_table so this is not a major issue.
+
+### CONJECTURES:
+
+It is conjectured that the multiplicity of V(lambda) in H^i(PConf_n(C)) stabilizes at n=k+i+1, where k
+is the sum of lambda. This can be tested for i up to max_i by running
+
+	./evaluate_multiple_n max_n max_i threads prime
+
+where n = 3\*max_i + 1 and prime is sufficiently, then running
+
+	python test_stabilization_conjecture.py max_i
+
+and checking that it returns true. Testing on a cluster has yet to be automated.
 
 ### KNOWN BUGS:
 

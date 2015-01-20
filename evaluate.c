@@ -105,9 +105,11 @@ int main(int argc, char **argv) {
 		free(counts);
 
 		// print the decomposition for i up to max_i
+		// overwrites these files if we have multiple primes
+		// but either the files agree or we need to recompute anyway (as signalled by full_decomp)
 		for (int i = 0; i <= max_i; i++) {
 			char decomp_filename[2048];
-			gmp_sprintf(decomp_filename, "H^%d(PConf_n(C)).out.%Zd", i, primes[prime_index]);
+			gmp_sprintf(decomp_filename, "H^%d(PConf_%d(C)).txt", i, n);
 			FILE *fp = fopen(decomp_filename, "w");
 			for (int j = 0; j < cs.count; j++) {
 				print_character_multiplicity(fp, cs.partitions[j], multiplicities[j][i]);

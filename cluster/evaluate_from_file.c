@@ -85,10 +85,12 @@ int main(int argc, char **argv) {
 		mpz_t *counts = count_cycle_types(n, primes[prime_index], cs, threads);
 
 		// open the output files
+		// overwrites these files if we have multiple primes
+		// but either the files agree or we need to recompute anyway (as signalled by full_decomp)
 		FILE **decomp_fps = malloc((max_i + 1) * sizeof(FILE *));
 		for (int i = 0; i <= max_i; i++) {
 			char decomp_filename[2048];
-			gmp_sprintf(decomp_filename, "H^%d(PConf_n(C)).out.%Zd", i, primes[prime_index]);
+			gmp_sprintf(decomp_filename, "H^%d(PConf_%d(C)).txt", i, n);
 			decomp_fps[i] = fopen(decomp_filename, "w");
 		}
 
